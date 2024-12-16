@@ -261,9 +261,12 @@ fontconfig_required = host_system not in ['windows', 'darwin']
 fontconfig_option = get_option('fontconfig').disable_auto_if(not fontconfig_required)
 
 harfbuzz_fallback_options = [
-  'coretext=enabled',
-  'directwrite=enabled',
-  'gdi=enabled'
+  'coretext=disabled',
+  'directwrite=disabled',
+  'gdi=disabled',
+  'tests=disabled',
+  'utilities=disabled',
+  'default_library=default_library'
 ]
 
 # Enable FreeType support in HarfBuzz if building it as a
@@ -272,10 +275,15 @@ if fontconfig_required or fontconfig_option.enabled()
   harfbuzz_fallback_options += 'freetype=enabled'
 endif
 
-harfbuzz_dep = dependency('harfbuzz',
-                          version: harfbuzz_req_version,
-                          default_options: harfbuzz_fallback_options)
+# Instead using the harfbuzz subproject only as a fallback
+# include it unconditonally.
 
+#harfbuzz_dep = dependency('harfbuzz',
+#                          version: harfbuzz_req_version,
+#                          default_options: harfbuzz_fallback_options)
+
+harbuzz_project = subproject('harfbuzz', default_options: harfbuzz_fallback_options)
+harfbuzz_dep  = harbuzz_project.get_variable('libharfbuzz_dep')
 pango_deps += harfbuzz_dep
 # In meson 1.1.0, this check can be replaced with .enable_if() to simplify the
 # logic in the fallback handling.
